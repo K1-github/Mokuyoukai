@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AIの頭の中</title>
+<meta name="description" content="文章を書くAI（大規模言語モデル）が、頭の中で何をしているのかを、触って動かしながら理解できる図解サイト。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#F0F3F5;
+  --surface:#FFFFFF;
+  --surface-2:#E6EBEF;
+  --ink:#15212B;
+  --muted:#586672;
+  --line:#CBD4DC;
+  --accent:#0B7A76;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#D3ECEA;
+  --marker:#D9960F;
+  --marker-soft:#FBEAC0;
+  --t1:#DCEBFA; --t2:#FBE2D5; --t3:#DDF2DF; --t4:#F1E0F7; --t5:#FBF0C9; --t6:#D8F0EF;
+  --shadow:0 1px 0 rgba(21,33,43,.06), 0 8px 24px -12px rgba(21,33,43,.18);
+  --display:"Dela Gothic One","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --body:"BIZ UDPGothic","Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#0D151B; --surface:#152029; --surface-2:#1C2A35; --ink:#E4ECF1; --muted:#98A7B3; --line:#2B3B47;
+    --accent:#45C3BB; --accent-ink:#06201F; --accent-soft:#16383A; --marker:#F0BD4F; --marker-soft:#3D3217;
+    --t1:#1F3550; --t2:#4A2D22; --t3:#1F3D27; --t4:#3B2748; --t5:#433A18; --t6:#173E3D;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#0D151B; --surface:#152029; --surface-2:#1C2A35; --ink:#E4ECF1; --muted:#98A7B3; --line:#2B3B47;
+  --accent:#45C3BB; --accent-ink:#06201F; --accent-soft:#16383A; --marker:#F0BD4F; --marker-soft:#3D3217;
+  --t1:#1F3550; --t2:#4A2D22; --t3:#1F3D27; --t4:#3B2748; --t5:#433A18; --t6:#173E3D;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:clamp(16px,4vw,40px)}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.3;text-wrap:balance;margin:0}
+p{margin:0}
+a{color:var(--accent)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--marker);outline-offset:2px;border-radius:6px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--ink);background:var(--surface);border-radius:999px;padding:6px 16px;cursor:pointer;font-weight:700;font-size:14px;line-height:1.6}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.chip-btn{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 14px;cursor:pointer;font-size:14px}
+.chip-btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:center;padding-block:20px;gap:16px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-size:18px;letter-spacing:.02em}
+.logo span{color:var(--accent)}
+.toc{display:flex;gap:4px 18px;flex-wrap:wrap;font-size:13px}
+.toc a{color:var(--muted);text-decoration:none}
+.toc a:hover{color:var(--ink)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(24px,5vw,64px);align-items:center;padding-block:clamp(24px,6vw,72px) clamp(40px,7vw,88px)}
+.hero h1{font-size:clamp(34px,6vw,64px);letter-spacing:.01em}
+.hero h1 .ln{display:inline-block}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lead{margin-top:20px;font-size:clamp(16px,1.8vw,19px);max-width:34em}
+.hero .lead b{background:linear-gradient(transparent 60%,var(--marker-soft) 60%)}
+.gen{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:22px;display:grid;gap:16px}
+.gen-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.gen-you{font-size:14px;color:var(--muted)}
+.gen-you b{color:var(--ink)}
+.gen-out{min-height:5.4em;font-size:20px;line-height:1.9;border-top:1px dashed var(--line);padding-top:12px}
+.gen-out .who{font-family:var(--mono);font-size:12px;color:var(--accent);display:block;letter-spacing:.1em}
+.gen-out .tk{border-radius:4px;padding:1px 1px}
+.gen-out .tk.new{background:var(--marker-soft)}
+.caret{display:inline-block;width:2px;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.cands{display:grid;gap:6px}
+.cands-title{font-size:12px;color:var(--muted)}
+.cand{display:grid;grid-template-columns:5.5em 1fr 3.4em;align-items:center;gap:10px;font-size:15px}
+.cand .bar{height:12px;border-radius:6px;background:var(--surface-2);overflow:hidden}
+.cand .bar i{display:block;height:100%;background:var(--line);border-radius:6px;transition:width .5s ease}
+.cand.win .bar i{background:var(--accent)}
+.cand.win .w{font-weight:700}
+.cand .p{text-align:right;font-size:13px;color:var(--muted)}
+
+/* chapters */
+.chapter{padding-block:clamp(48px,8vw,96px);border-top:1px solid var(--line)}
+.ch-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(24px,5vw,64px);align-items:start}
+.ch-text{display:grid;gap:16px;max-width:34em}
+.ch-num{font-family:var(--mono);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.ch-num b{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--bg);font-weight:500}
+.ch-text h2{font-size:clamp(26px,3.4vw,36px)}
+.ch-text p b{background:linear-gradient(transparent 60%,var(--marker-soft) 60%)}
+.analogy{border-left:3px solid var(--marker);padding:4px 0 4px 14px;font-size:15px;color:var(--muted)}
+.analogy strong{color:var(--ink)}
+.panel{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:clamp(16px,2.4vw,26px);display:grid;gap:16px;min-width:0}
+.panel-label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.note{font-size:12px;color:var(--muted)}
+
+/* tokens */
+.tok-input{width:100%;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);padding:10px 12px;font-size:16px}
+.tok-input:focus{border-color:var(--accent);outline:none}
+.tok-list{display:flex;flex-wrap:wrap;gap:6px}
+.tok{display:inline-flex;flex-direction:column;align-items:center;border-radius:8px;padding:4px 8px 3px;font-size:18px;line-height:1.4;min-width:1.8em}
+.tok small{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.2}
+.tok:nth-child(6n+1){background:var(--t1)}.tok:nth-child(6n+2){background:var(--t2)}.tok:nth-child(6n+3){background:var(--t3)}
+.tok:nth-child(6n+4){background:var(--t4)}.tok:nth-child(6n+5){background:var(--t5)}.tok:nth-child(6n+6){background:var(--t6)}
+.stats{display:flex;gap:24px;flex-wrap:wrap}
+.stat{display:grid}
+.stat .n{font-family:var(--mono);font-size:28px;line-height:1.2}
+.stat .l{font-size:12px;color:var(--muted)}
+
+/* map */
+.map-box{overflow-x:auto}
+.map{display:block;width:100%;min-width:520px;height:auto}
+.map .cl{font-family:var(--mono);font-size:11px;fill:var(--muted);letter-spacing:.12em}
+.map .blob{fill:var(--surface-2)}
+.map .grid{stroke:var(--line);stroke-width:.6}
+.map .w{cursor:pointer}
+.map .w circle{fill:var(--ink)}
+.map .w text{font-family:var(--body);font-size:15px;fill:var(--ink)}
+.map .w.sel circle{fill:var(--accent)}
+.map .w.sel text{fill:var(--accent);font-weight:700}
+.map .w.nb circle{fill:var(--marker)}
+.map .link{stroke:var(--marker);stroke-width:2;stroke-dasharray:4 4}
+.map .vec{stroke:var(--accent);stroke-width:2.5;fill:none}
+.map .vec-head{fill:var(--accent)}
+.map-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.map-say{font-size:15px;min-height:3.4em}
+
+/* attention */
+.attn-scroll{overflow-x:auto;padding-bottom:4px}
+.attn-inner{position:relative;display:inline-block;min-width:100%}
+.attn-svg{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.attn-svg path{fill:none;stroke:var(--marker);stroke-linecap:round}
+.attn-row{display:flex;gap:4px;padding-top:120px;white-space:nowrap}
+.at{display:flex;flex-direction:column;align-items:center;gap:4px;border:1.5px solid transparent;background:var(--bg);border-radius:8px;padding:6px 6px 4px;cursor:pointer;font-size:18px;line-height:1.3}
+.at:hover{border-color:var(--line)}
+.at.sel{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.at.future{opacity:.35}
+.at .wbar{width:100%;height:36px;display:flex;align-items:flex-end;justify-content:center}
+.at .wbar i{display:block;width:70%;background:var(--marker);border-radius:3px 3px 0 0;transition:height .35s ease}
+.at .pc{font-family:var(--mono);font-size:10px;color:var(--muted);min-height:1.2em}
+.attn-say{font-size:15px;min-height:3.4em}
+.attn-say b{color:var(--accent)}
+
+/* layers */
+.layers{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:stretch}
+.stack{display:flex;flex-direction:column-reverse;gap:3px;width:64px}
+.stack i{display:block;height:7px;border-radius:2px;background:var(--surface-2);transition:background .3s}
+.stack i.on{background:var(--accent)}
+.stack i.past{background:var(--accent-soft)}
+.layer-card{display:grid;gap:12px;align-content:start}
+.layer-card .lv{font-family:var(--mono);font-size:13px;color:var(--accent)}
+.layer-card .th{font-size:clamp(18px,2.2vw,22px);font-weight:700;line-height:1.6}
+.layer-card .nums{font-family:var(--mono);font-size:12px;color:var(--muted);word-break:break-all;line-height:1.6}
+.range{width:100%;accent-color:var(--accent)}
+.range-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-family:var(--mono)}
+
+/* next word */
+.nw-prompt{font-size:clamp(20px,2.6vw,26px);font-weight:700}
+.nw-prompt .blank{display:inline-block;min-width:3.2em;border-bottom:3px solid var(--accent);color:var(--accent);text-align:center;padding-inline:4px}
+.nw-bars{display:grid;gap:6px}
+.nw-bar{display:grid;grid-template-columns:5em 1fr 3.6em;gap:10px;align-items:center;font-size:15px}
+.nw-bar .bar{height:16px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.nw-bar .bar i{display:block;height:100%;background:var(--accent);opacity:.55;transition:width .35s ease}
+.nw-bar.hit .bar i{opacity:1;background:var(--marker)}
+.nw-bar.hit .w{font-weight:700}
+.nw-bar .p{text-align:right;font-size:13px;color:var(--muted)}
+.temp{display:grid;gap:6px}
+.temp-row{display:flex;justify-content:space-between;font-size:14px;gap:8px}
+.hist{display:flex;flex-wrap:wrap;gap:6px;min-height:30px}
+.hist span{font-size:13px;background:var(--bg);border-radius:6px;padding:2px 8px}
+
+/* flow */
+.flow-scroll{overflow-x:auto}
+.flow{display:block;min-width:760px;width:100%;height:auto}
+.flow .box{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.flow .box.hl{stroke:var(--accent);stroke-width:2}
+.flow .t{font-family:var(--body);font-size:15px;font-weight:700;fill:var(--ink)}
+.flow .s{font-family:var(--body);font-size:12px;fill:var(--muted)}
+.flow .n{font-family:var(--mono);font-size:11px;fill:var(--accent)}
+.flow .ar{stroke:var(--ink);stroke-width:1.5;fill:none}
+.flow .ar-h{fill:var(--ink)}
+.flow .loop{stroke:var(--marker);stroke-width:2;fill:none;stroke-dasharray:6 5}
+.flow .loop-h{fill:var(--marker)}
+.flow .lt{font-family:var(--body);font-size:13px;fill:var(--marker);font-weight:700}
+
+/* myths */
+.myths{display:grid;gap:0;margin-top:32px}
+.myth{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:clamp(16px,4vw,48px);padding-block:24px;border-top:1px solid var(--line)}
+.myth:last-child{border-bottom:1px solid var(--line)}
+.myth .q{font-size:18px;font-weight:700;display:flex;gap:10px}
+.myth .q::before{content:"誤解";flex:none;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 6px;height:1.8em;line-height:1.7em;margin-top:.25em}
+.myth .a{font-size:15px}
+.myth .a strong{color:var(--accent)}
+
+.sum{display:grid;gap:18px;max-width:40em}
+.sum h2{font-size:clamp(26px,3.4vw,36px)}
+footer{padding-block:40px 56px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:grid;gap:8px}
+
+@media (max-width: 860px){
+  .hero,.ch-grid{grid-template-columns:1fr}
+  .myth{grid-template-columns:1fr;gap:8px}
+}
+@media (prefers-reduced-motion: reduce){
+  .caret{animation:none}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="logo">AIの<span>頭の中</span></div>
+  <nav class="toc" aria-label="目次">
+    <a href="#ch1">1 かけらに分ける</a>
+    <a href="#ch2">2 意味の地図</a>
+    <a href="#ch3">3 注目する</a>
+    <a href="#ch4">4 何層も考える</a>
+    <a href="#ch5">5 次の一語</a>
+    <a href="#whole">全体図</a>
+    <a href="#myths">よくある誤解</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div>
+    <p class="eyebrow">How a language AI thinks</p>
+    <h1 style="margin-top:12px"><span class="ln">AIは、</span><span class="ln"><em>次の一語</em>を</span><span class="ln">ひたすら</span><span class="ln">当てている。</span></h1>
+    <p class="lead">ChatGPTやClaudeのような「文章を書くAI」の正体は、<b>「この続きに来そうな言葉はどれ？」を一語ずつ予想し続ける機械</b>です。右の画面では、AIが昔話を書きながら、毎回どの言葉にするか迷っている様子を再現しています。<br>このページでは、その予想が頭の中でどう作られるのかを、5つのステップで触りながら見ていきます。</p>
+  </div>
+  <div class="gen" aria-live="polite">
+    <div class="gen-head">
+      <div class="gen-you">あなた：<b>昔話を始めて</b></div>
+      <button class="btn" id="genToggle" type="button">一時停止</button>
+    </div>
+    <div class="gen-out"><span class="who">AI の返事</span><span id="genText"></span><span class="caret"></span></div>
+    <div class="cands">
+      <div class="cands-title">いま考えている候補と、それぞれの確率</div>
+      <div id="genCands"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 1 -->
+<section class="chapter" id="ch1">
+  <div class="ch-grid">
+    <div class="ch-text">
+      <div class="ch-num"><b>1</b>文章を読む前に</div>
+      <h2>まず、文章を小さな「かけら」に分ける</h2>
+      <p>AIは文字をそのまま読めません。まず文章を<b>「トークン」と呼ばれる小さなかけら</b>に切り分け、それぞれに番号をつけます。AIが扱っているのは、実はこの番号の並びです。</p>
+      <p>かけらは1文字のこともあれば、よく出る単語ひとかたまりのこともあります。下の入力欄を書きかえて、どう分かれるか試してみてください。</p>
+      <p class="analogy"><strong>たとえるなら：</strong>レゴブロック。どんな文章も、決まった種類のブロックの組み合わせで表します。</p>
+    </div>
+    <div class="panel">
+      <label class="panel-label" for="tokIn"><span>好きな文章を入れてみよう</span></label>
+      <input class="tok-input" id="tokIn" type="text" value="AIは文章を小さなかけらに分けて読みます。ChatGPTもClaudeも同じです。">
+      <div class="tok-list" id="tokOut" aria-live="polite"></div>
+      <div class="stats">
+        <div class="stat"><span class="n" id="stChars">0</span><span class="l">文字</span></div>
+        <div class="stat"><span class="n" id="stToks">0</span><span class="l">トークン（かけら）</span></div>
+      </div>
+      <p class="note">※ 仕組みを見せるための簡易版です。本物のAIは、大量の文章から「よく一緒に出てくる文字の組」を学んで切り方を決めています。かけらの下の数字は番号の例です。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="chapter" id="ch2">
+  <div class="ch-grid">
+    <div class="ch-text">
+      <div class="ch-num"><b>2</b>意味をつかむ</div>
+      <h2>言葉を「意味の地図」の上に置く</h2>
+      <p>番号だけでは意味がわかりません。そこでAIは、それぞれのかけらを<b>巨大な地図の上の一点</b>に置きかえます。似た意味の言葉は近くに、違う意味の言葉は遠くに集まります。</p>
+      <p>本物の地図は2方向ではなく、<b>数千方向</b>ある想像できない空間です。右はそれを平面にぎゅっと縮めたイメージです。言葉をクリックすると、近くにいる仲間が光ります。</p>
+      <p class="analogy"><strong>おもしろい性質：</strong>「男→女」への向きと、「王→女王」への向きがほぼ同じになります。AIは、誰にも教わらずに「性別」という方向を地図の中に作っているのです。</p>
+    </div>
+    <div class="panel">
+      <div class="panel-label"><span>意味の地図（イメージ）</span><span>言葉をクリック</span></div>
+      <div class="map-box"><svg class="map" id="map" viewBox="0 0 600 420" role="img" aria-label="言葉が意味ごとに集まった地図"></svg></div>
+      <div class="map-ctrl">
+        <button class="btn" id="vecBtn" type="button">王 − 男 ＋ 女 ＝ ？</button>
+      </div>
+      <p class="map-say" id="mapSay">「猫」をクリックしてみてください。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="chapter" id="ch3">
+  <div class="ch-grid">
+    <div class="ch-text">
+      <div class="ch-num"><b>3</b>文脈を読む</div>
+      <h2>どの言葉に「注目」するか決める</h2>
+      <p>同じ「それ」でも、文によって指すものが違います。そこでAIは、ひとつの言葉を読むたびに<b>「前に出てきた言葉のうち、どれが関係ありそう？」</b>を計算し、注目する度合いを決めます。これを<b>アテンション（注意）</b>と呼びます。</p>
+      <p>右の文の言葉をクリックすると、その言葉がどこに注目しているかが線と棒で出ます。「それ」を押すと、ちゃんと「猫」を強く見ているのがわかります。</p>
+      <p class="analogy"><strong>ポイント：</strong>AIは前から順に読むので、見られるのは<strong>自分より前の言葉だけ</strong>。後ろの言葉（薄い色）はまだ「知らない」のです。</p>
+    </div>
+    <div class="panel">
+      <div class="panel-label"><span>言葉をクリックして、注目先を見る</span><span>線が太いほど強く注目</span></div>
+      <div class="attn-scroll"><div class="attn-inner" id="attnInner"><svg class="attn-svg" id="attnSvg" aria-hidden="true"></svg><div class="attn-row" id="attnRow"></div></div></div>
+      <p class="attn-say" id="attnSay"></p>
+      <p class="note">※ 数値は説明用の例です。本物のAIは、この「注目」を何十種類もの視点で同時に行っています（文法を見る担当、意味を見る担当…など）。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="chapter" id="ch4">
+  <div class="ch-grid">
+    <div class="ch-text">
+      <div class="ch-num"><b>4</b>理解を深める</div>
+      <h2>「注目」を何十層もくり返して、理解を深める</h2>
+      <p>ステップ3の「注目」は1回では終わりません。AIの中には同じような層が<b>何十段も積み重なって</b>いて、層を通るたびに、言葉の持つ情報が少しずつ書き足されていきます。</p>
+      <p>下の層では「ひらがな2文字だ」くらいの浅い情報。上の層に行くほど「これは前に出てきた猫のことだ」という深い理解に変わっていきます。スライダーを動かして、「それ」という言葉の中身がどう育つか見てみましょう。</p>
+      <p class="analogy"><strong>たとえるなら：</strong>伝言を回しながら、一人ひとりが気づいたことをメモに書き足していくバケツリレー。</p>
+    </div>
+    <div class="panel">
+      <div class="panel-label"><span>「猫が魚を食べたのは、<b>それ</b>がお腹を空かせていたからだ。」の「それ」</span></div>
+      <div class="layers">
+        <div class="stack" id="stack" aria-hidden="true"></div>
+        <div class="layer-card">
+          <div class="lv mono" id="lyLv"></div>
+          <div class="th" id="lyTh"></div>
+          <div class="nums" id="lyNums"></div>
+        </div>
+      </div>
+      <div>
+        <label class="note" for="lyRange">層を上がる</label>
+        <input class="range" id="lyRange" type="range" min="0" max="3" step="1" value="0">
+        <div class="range-labels"><span>第1層</span><span>第8層</span><span>第20層</span><span>第32層</span></div>
+      </div>
+      <p class="note">※ 本当の中身は、人間の言葉ではなく何千個もの数字の並びです（灰色の数字はそのイメージ）。それを人間の言葉に翻訳して読み解こうとする研究が「解釈可能性」研究として進められています。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="chapter" id="ch5">
+  <div class="ch-grid">
+    <div class="ch-text">
+      <div class="ch-num"><b>5</b>答えを出す</div>
+      <h2>次に来る言葉の「確率」を出して、一つ選ぶ</h2>
+      <p>最後の層を通り抜けると、AIは<b>知っているすべてのかけら（数万種類）に対して「次に来る確率」</b>をつけます。その中から一つ選んで書き、また最初に戻る。これをくり返して文章ができあがります。</p>
+      <p>いつも一番確率の高いものを選ぶと、毎回同じで単調な文章になります。そこで少しだけ<b>サイコロを振るように</b>選びます。そのさじ加減が「温度」です。温度を上げると冒険的に、下げると手堅くなります。</p>
+      <p class="analogy"><strong>だから：</strong>同じ質問をしても毎回少し違う答えが返ってくるのです。</p>
+    </div>
+    <div class="panel">
+      <div class="map-ctrl" role="group" aria-label="文の書き出しを選ぶ" id="nwPrompts"></div>
+      <div class="nw-prompt"><span id="nwText"></span><span class="blank" id="nwBlank">？</span></div>
+      <div class="nw-bars" id="nwBars"></div>
+      <div class="temp">
+        <div class="temp-row"><label for="nwTemp">温度（ランダムさ）</label><span class="mono" id="nwTempV">1.0</span></div>
+        <input class="range" id="nwTemp" type="range" min="0.1" max="2" step="0.1" value="1">
+        <div class="range-labels"><span>手堅い</span><span>冒険的</span></div>
+      </div>
+      <div class="map-ctrl">
+        <button class="btn primary" id="nwPick" type="button">サイコロを振って1語えらぶ</button>
+        <button class="btn" id="nwPick10" type="button">10回えらぶ</button>
+      </div>
+      <div>
+        <div class="note">これまでに選ばれた言葉</div>
+        <div class="hist" id="nwHist"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- whole -->
+<section class="chapter" id="whole">
+  <div class="sum">
+    <p class="eyebrow">The whole loop</p>
+    <h2>ぜんぶ合わせると、こうなる</h2>
+    <p>AIが返事の中の<b>一語</b>を書くたびに、この流れが一周まるごと動いています。長い返事なら、これを何百回、何千回とくり返しているわけです。</p>
+  </div>
+  <div class="flow-scroll" style="margin-top:28px">
+    <svg class="flow" viewBox="0 0 1000 250" role="img" aria-label="文章からトークン、意味の地図、注目と層、確率、一語の選択、そして最初に戻る流れ">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ar-h" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="lh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="loop-h" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+      <g>
+        <rect class="box" x="10" y="40" width="140" height="92" rx="12"/>
+        <text class="n" x="26" y="64">入力</text><text class="t" x="26" y="92">文章</text><text class="s" x="26" y="116">あなたの質問</text>
+      </g>
+      <g>
+        <rect class="box" x="180" y="40" width="140" height="92" rx="12"/>
+        <text class="n" x="196" y="64">STEP 1</text><text class="t" x="196" y="92">かけらに分割</text><text class="s" x="196" y="116">トークン・番号</text>
+      </g>
+      <g>
+        <rect class="box" x="350" y="40" width="140" height="92" rx="12"/>
+        <text class="n" x="366" y="64">STEP 2</text><text class="t" x="366" y="92">意味の地図へ</text><text class="s" x="366" y="116">数千個の数字</text>
+      </g>
+      <g>
+        <rect class="box hl" x="520" y="40" width="140" height="92" rx="12"/>
+        <text class="n" x="536" y="64">STEP 3・4</text><text class="t" x="536" y="92">注目 × 数十層</text><text class="s" x="536" y="116">文脈を深く理解</text>
+      </g>
+      <g>
+        <rect class="box" x="690" y="40" width="140" height="92" rx="12"/>
+        <text class="n" x="706" y="64">STEP 5</text><text class="t" x="706" y="92">確率を出す</text><text class="s" x="706" y="116">全候補に点数</text>
+      </g>
+      <g>
+        <rect class="box" x="860" y="40" width="130" height="92" rx="12"/>
+        <text class="n" x="876" y="64">出力</text><text class="t" x="876" y="92">一語を選ぶ</text><text class="s" x="876" y="116">温度で加減</text>
+      </g>
+      <path class="ar" d="M150,86 H176" marker-end="url(#ah)"/>
+      <path class="ar" d="M320,86 H346" marker-end="url(#ah)"/>
+      <path class="ar" d="M490,86 H516" marker-end="url(#ah)"/>
+      <path class="ar" d="M660,86 H686" marker-end="url(#ah)"/>
+      <path class="ar" d="M830,86 H856" marker-end="url(#ah)"/>
+      <path class="loop" d="M925,136 V200 Q925,214 911,214 H94 Q80,214 80,200 V140" marker-end="url(#lh)"/>
+      <text class="lt" x="500" y="238" text-anchor="middle">選んだ一語を文章の最後につけ足して、また最初から（文章が終わるまでくり返し）</text>
+    </svg>
+  </div>
+</section>
+
+<!-- myths -->
+<section class="chapter" id="myths">
+  <div class="sum">
+    <p class="eyebrow">Common misunderstandings</p>
+    <h2>よくある誤解と、本当のところ</h2>
+    <p>仕組みがわかると、AIの得意・不得意も見えてきます。</p>
+  </div>
+  <div class="myths">
+    <div class="myth">
+      <p class="q">AIはネットを検索して答えている</p>
+      <p class="a">基本は<strong>学習のときに身につけた「言葉のつながり方」から予想している</strong>だけで、答えるたびに調べているわけではありません。検索機能がついたAIもありますが、それは検索結果を文章として読ませる「追加の仕組み」です。</p>
+    </div>
+    <div class="myth">
+      <p class="q">AIはわざと嘘をつく</p>
+      <p class="a">AIは「もっともらしい続き」を作る仕組みなので、<strong>知らないことでも、それらしい文章をすらすら書けてしまいます</strong>。これを「ハルシネーション（幻覚）」と呼びます。悪意ではなく、仕組みから来るクセです。大事な情報は確かめましょう。</p>
+    </div>
+    <div class="myth">
+      <p class="q">話しているうちに、AIが賢く育っていく</p>
+      <p class="a">会話の中では、<strong>それまでのやりとりを毎回まるごと読み直している</strong>だけです。AIの「脳」にあたる数字（パラメータ）は、ふつう会話では書きかわりません。新しい会話を始めると前の話を覚えていないのはそのためです（記憶機能がある場合は、メモを別に読ませています）。</p>
+    </div>
+    <div class="myth">
+      <p class="q">ただ文章を丸暗記して、つぎはぎしているだけ</p>
+      <p class="a">学習した文章をそのまま貼り合わせているのではなく、ステップ2・4で見たように、<strong>中で意味や関係を表す「地図」や「メモ」を作っている</strong>ことが研究でわかってきています。ただし、それが人間と同じ「理解」なのかは、まだ研究の途中です。</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>このページの数値や図は、仕組みをわかりやすくするための<strong>説明用の例</strong>です。実際のAIの中身はもっと大きく、複雑です。</p>
+  <p>用語：トークン ＝ かけら ／ 埋め込み（エンベディング） ＝ 意味の地図 ／ アテンション ＝ 注目 ／ 層（レイヤー） ＝ くり返しの段 ／ 温度 ＝ ランダムさ</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+const $=(s)=>document.querySelector(s);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc=(s)=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Hero: generation loop ---------- */
+const story=[
+ ["むかし",[["むかし",.62],["ある",.14],["昔",.09]]],
+ ["むかし",[["むかし",.81],["、",.10],["の",.04]]],
+ ["、",[["、",.88],["。",.05],["の",.03]]],
+ ["ある",[["ある",.74],["とある",.12],["山",.05]]],
+ ["ところ",[["ところ",.90],["村",.06],["日",.02]]],
+ ["に",[["に",.96],["で",.02],["の",.01]]],
+ ["おじい",[["おじい",.58],["、",.20],["一人",.10]]],
+ ["さん",[["さん",.97],["ちゃん",.02],["様",.01]]],
+ ["と",[["と",.83],["が",.12],["は",.03]]],
+ ["おばあ",[["おばあ",.95],["娘",.02],["犬",.01]]],
+ ["さん",[["さん",.98],["ちゃん",.01],["様",.01]]],
+ ["が",[["が",.93],["は",.04],["の",.01]]],
+ ["住んで",[["住んで",.71],["いました",.15],["暮らして",.10]]],
+ ["いました",[["いました",.93],["おり",.04],["いた",.02]]],
+ ["。",[["。",.97],["、",.02],["！",.01]]]
+];
+const genText=$('#genText'), genCands=$('#genCands'), genToggle=$('#genToggle');
+let gi=0, playing=!reduce, timer=null;
+function tick(){
+  if(gi>=story.length){gi=0;genText.innerHTML='';genCands.innerHTML='';schedule(900);return;}
+  // show candidates for this step, then mark the winner, then commit
+  const step=story[gi];
+  genCands.innerHTML=step[1].map(([w,p])=>`<div class="cand"><span class="w">${esc(w)}</span><span class="bar"><i style="width:0%"></i></span><span class="p mono">${Math.round(p*100)}%</span></div>`).join('');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    genCands.querySelectorAll('.bar i').forEach((el,i)=>el.style.width=Math.round(step[1][i][1]*100)+'%');
+  }));
+  setTimeout(()=>{
+    const first=genCands.querySelector('.cand'); if(first) first.classList.add('win');
+    gi++;
+    const done=story.slice(0,gi);
+    genText.innerHTML=done.map((s,i)=>`<span class="tk${i===gi-1?' new':''}">${esc(s[0])}</span>`).join('');
+    schedule(gi>=story.length?3200:reduce?0:700);
+  }, reduce?0:650);
+}
+function schedule(ms){clearTimeout(timer); if(playing) timer=setTimeout(tick,ms);}
+genToggle.addEventListener('click',()=>{
+  if(reduce && !playing){ tick(); return; }
+  playing=!playing; genToggle.textContent=playing?'一時停止':'再生';
+  if(playing) schedule(100); else clearTimeout(timer);
+});
+if(reduce){genToggle.textContent='次の一語'; gi=6;}
+{
+  // resting state: a few words already written with candidates visible
+  if(!reduce) gi=3;
+  const done=story.slice(0,gi);
+  genText.innerHTML=done.map(s=>`<span class="tk">${esc(s[0])}</span>`).join('');
+  const step=story[gi];
+  genCands.innerHTML=step[1].map(([w,p],i)=>`<div class="cand${i===0?' win':''}"><span class="w">${esc(w)}</span><span class="bar"><i style="width:${Math.round(p*100)}%"></i></span><span class="p mono">${Math.round(p*100)}%</span></div>`).join('');
+  schedule(1400);
+}
+
+/* ---------- 1: tokenizer ---------- */
+function tokenize(s){
+  const re=/[一-鿿々〆]+|[ぁ-ゖ]+|[ァ-ヺー]+|[A-Za-z]+|[0-9]+|\s+|[^\s]/gu;
+  const out=[];
+  for(const m of s.matchAll(re)){
+    const w=m[0];
+    if(/^\s+$/.test(w)){out.push('␣');continue;}
+    if(/^[A-Za-z]/.test(w)){
+      const parts=w.match(/[A-Z]+(?![a-z])|[A-Z]?[a-z]+/g)||[w];
+      for(const p of parts) for(let i=0;i<p.length;i+=5) out.push(p.slice(i,i+5));
+      continue;
+    }
+    const size=/^[ぁ-ゖ]/.test(w)?2:/^[ァ-ヺ]/.test(w)?3:/^[一-鿿]/.test(w)?2:4;
+    const ch=[...w];
+    for(let i=0;i<ch.length;i+=size) out.push(ch.slice(i,i+size).join(''));
+  }
+  return out;
+}
+function tid(t){let h=2166136261;for(const c of t){h^=c.codePointAt(0);h=Math.imul(h,16777619);}return (h>>>0)%100000;}
+const tokIn=$('#tokIn'), tokOut=$('#tokOut');
+function renderTok(){
+  const toks=tokenize(tokIn.value);
+  tokOut.innerHTML=toks.map(t=>`<span class="tok">${esc(t)}<small>${tid(t)}</small></span>`).join('');
+  $('#stChars').textContent=[...tokIn.value].length;
+  $('#stToks').textContent=toks.length;
+}
+tokIn.addEventListener('input',renderTok); renderTok();
+
+/* ---------- 2: meaning map ---------- */
+const words={
+  '犬':[80,300,'a'],'猫':[125,330,'a'],'ライオン':[60,250,'a'],'ウサギ':[150,270,'a'],
+  'りんご':[420,330,'f'],'バナナ':[480,300,'f'],'ラーメン':[505,365,'f'],'寿司':[430,380,'f'],
+  '車':[420,95,'v'],'電車':[480,70,'v'],'飛行機':[530,120,'v'],'自転車':[450,150,'v'],
+  '王':[110,70,'p'],'女王':[240,55,'p'],'男':[110,160,'p'],'女':[240,145,'p'],
+  '嬉しい':[285,225,'e'],'楽しい':[340,245,'e'],'悲しい':[280,295,'e'],'寂しい':[340,310,'e']
+};
+const clusters=[[105,295,95,70,'動物'],[465,345,85,58,'食べ物'],[475,105,85,60,'乗り物'],[175,108,110,75,'人・立場'],[310,268,68,62,'気持ち']];
+const map=$('#map'); const NS='http://www.w3.org/2000/svg';
+const mk=(tag,attrs,parent)=>{const el=document.createElementNS(NS,tag);for(const k in attrs)el.setAttribute(k,attrs[k]);(parent||map).appendChild(el);return el;};
+for(let x=50;x<600;x+=50) mk('line',{x1:x,y1:0,x2:x,y2:420,class:'grid'});
+for(let y=50;y<420;y+=50) mk('line',{x1:0,y1:y,x2:600,y2:y,class:'grid'});
+clusters.forEach(([cx,cy,rx,ry])=>mk('ellipse',{cx,cy,rx,ry,class:'blob'}));
+clusters.forEach(([cx,cy,rx,ry,l])=>{const t=mk('text',{x:cx,y:cy-ry-8,class:'cl','text-anchor':'middle'});t.textContent=l;});
+const linkLayer=mk('g',{}); const vecLayer=mk('g',{});
+const wEls={};
+for(const [w,[x,y]] of Object.entries(words)){
+  const g=mk('g',{class:'w',tabindex:'0',role:'button','aria-label':w});
+  mk('circle',{cx:x,cy:y,r:5},g);
+  const t=mk('text',{x:x+9,y:y+5},g); t.textContent=w;
+  g.addEventListener('click',()=>selectWord(w));
+  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectWord(w);}});
+  wEls[w]=g;
+}
+const mapSay=$('#mapSay');
+function clearMap(){linkLayer.innerHTML='';vecLayer.innerHTML='';Object.values(wEls).forEach(g=>g.classList.remove('sel','nb'));}
+function selectWord(w){
+  clearMap();
+  const [x,y]=words[w];
+  const nb=Object.keys(words).filter(k=>k!==w).map(k=>[k,Math.hypot(words[k][0]-x,words[k][1]-y)]).sort((a,b)=>a[1]-b[1]).slice(0,3);
+  nb.forEach(([k])=>{mk('line',{x1:x,y1:y,x2:words[k][0],y2:words[k][1],class:'link'},linkLayer);wEls[k].classList.add('nb');});
+  wEls[w].classList.add('sel');
+  const far=Object.keys(words).map(k=>[k,Math.hypot(words[k][0]-x,words[k][1]-y)]).sort((a,b)=>b[1]-a[1])[0][0];
+  mapSay.innerHTML=`「<b>${esc(w)}</b>」のご近所は <b>${nb.map(n=>esc(n[0])).join('・')}</b>。いちばん遠いのは「${esc(far)}」。AIにとって、近い＝意味が似ている、ということです。`;
+}
+function arrow(a,b,parent){
+  const [x1,y1]=words[a],[x2,y2]=words[b];
+  const ang=Math.atan2(y2-y1,x2-x1), len=Math.hypot(x2-x1,y2-y1)-10;
+  const ex=x1+Math.cos(ang)*len, ey=y1+Math.sin(ang)*len;
+  mk('line',{x1,y1,x2:ex,y2:ey,class:'vec'},parent);
+  const s=9, p=[[ex+Math.cos(ang)*4,ey+Math.sin(ang)*4],[ex-Math.cos(ang-0.45)*s,ey-Math.sin(ang-0.45)*s],[ex-Math.cos(ang+0.45)*s,ey-Math.sin(ang+0.45)*s]];
+  mk('polygon',{points:p.map(q=>q.join(',')).join(' '),class:'vec-head'},parent);
+}
+$('#vecBtn').addEventListener('click',()=>{
+  clearMap();
+  arrow('男','女',vecLayer); arrow('王','女王',vecLayer);
+  ['王','女王','男','女'].forEach(w=>wEls[w].classList.add('sel'));
+  mapSay.innerHTML='「男→女」の矢印と「王→女王」の矢印が、ほぼ同じ向き・同じ長さ。だから「王」から「男」を引いて「女」を足すと、ちゃんと<b>「女王」</b>の場所にたどり着きます。';
+});
+
+/* ---------- 3: attention ---------- */
+const sent=["猫","が","魚","を","食べた","のは","、","それ","が","お腹","を","空かせて","いた","から","だ","。"];
+const W={
+  7:{0:.55,2:.14,4:.09,1:.06,7:.10,5:.06},
+  4:{0:.34,2:.40,3:.08,4:.12,1:.06},
+  11:{9:.40,7:.28,0:.12,10:.06,11:.14},
+  2:{0:.30,1:.18,2:.52},
+  13:{11:.30,4:.22,7:.14,13:.20,5:.14},
+  9:{7:.32,0:.16,9:.40,8:.12}
+};
+const say={
+  7:'「<b>それ</b>」を読むとき、いちばん強く見ているのは「<b>猫</b>」（55%）。「魚」も少し見ていますが、AIは「それ＝猫」と判断しつつあります。',
+  4:'「<b>食べた</b>」は、「誰が？」＝猫、「何を？」＝魚 の両方をしっかり見ています。',
+  11:'「<b>空かせて</b>」は「お腹」と組み合わせて「お腹を空かせる」というひとかたまりの意味を作り、「それ」＝誰が空腹なのか、にも目を向けています。',
+  2:'「<b>魚</b>」はまだ文の最初のほう。見られるのは「猫」「が」と自分だけです。',
+  13:'「<b>から</b>」は理由を表す言葉。何の理由なのかをつかむため、「空かせて」「食べた」を見ています。',
+  9:'「<b>お腹</b>」は、誰のお腹なのかを知るために「それ」と「猫」を見ています。'
+};
+function weightsFor(i){
+  if(W[i]) return W[i];
+  const o={}; o[i]=.45; if(i>0) o[i-1]=.35; o[0]=(o[0]||0)+(i>0?.20:.55); return o;
+}
+const row=$('#attnRow'), svg=$('#attnSvg'), inner=$('#attnInner'), attnSay=$('#attnSay');
+row.innerHTML=sent.map((w,i)=>`<button type="button" class="at" data-i="${i}"><span class="wbar"><i style="height:0"></i></span><span>${esc(w)}</span><span class="pc"></span></button>`).join('');
+let attnSel=7;
+function drawAttn(){
+  const btns=[...row.children]; const w=weightsFor(attnSel);
+  const base=inner.getBoundingClientRect();
+  svg.setAttribute('width',inner.scrollWidth); svg.setAttribute('height',120);
+  svg.innerHTML='';
+  const cx=b=>{const r=b.getBoundingClientRect();return r.left-base.left+r.width/2;};
+  const x0=cx(btns[attnSel]);
+  btns.forEach((b,i)=>{
+    b.classList.toggle('sel',i===attnSel); b.classList.toggle('future',i>attnSel);
+    b.setAttribute('aria-pressed',i===attnSel);
+    const v=w[i]||0;
+    b.querySelector('.wbar i').style.height=Math.round(v*36/0.6)+'px';
+    b.querySelector('.pc').textContent=v?Math.round(v*100)+'%':'';
+    if(v&&i!==attnSel){
+      const x1=cx(b), d=Math.abs(x0-x1), h=Math.min(108,20+d*.45);
+      const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('d',`M${x0},118 C${x0},${118-h} ${x1},${118-h} ${x1},118`);
+      p.setAttribute('stroke-width',(1.5+v*14).toFixed(1));
+      p.setAttribute('stroke-opacity',(0.35+v).toFixed(2));
+      svg.appendChild(p);
+    }
+  });
+  attnSay.innerHTML=say[attnSel]||`「<b>${esc(sent[attnSel])}</b>」は、主に自分自身とすぐ前の言葉を見ています。文の形を整える、目立たないけれど大事な仕事です。`;
+}
+row.addEventListener('click',e=>{const b=e.target.closest('.at');if(!b)return;attnSel=+b.dataset.i;drawAttn();});
+addEventListener('resize',drawAttn);
+drawAttn();
+if(document.fonts) document.fonts.ready.then(drawAttn);
+
+/* ---------- 4: layers ---------- */
+const stack=$('#stack'); for(let i=0;i<32;i++) stack.appendChild(document.createElement('i'));
+const levels=[
+  [1,'「それ」…ひらがな2文字の、よく出てくる言葉。','まだ文字の見た目くらいしか分かっていない段階。'],
+  [8,'何かを指し示す言葉（代名詞）らしい。','周りの言葉とのつながりから、言葉の「役割」が見えてきた。'],
+  [20,'前に出てきた「猫」か「魚」のどちらかを指している。','文の中の他の言葉と結びつけ始めた。'],
+  [32,'「お腹を空かせていた」のは、食べた側 → つまり「猫」のこと。','文全体の意味と常識を使って、答えにたどり着いた。']
+];
+const lyR=$('#lyRange');
+function seedNums(n){let s=n*9301+49297, out=[];for(let i=0;i<14;i++){s=(s*9301+49297)%233280;out.push(((s/233280)*2-1).toFixed(2));}return '['+out.join(', ')+', …]';}
+function renderLy(){
+  const k=+lyR.value, [n,th,sub]=levels[k];
+  [...stack.children].forEach((el,i)=>{el.className=i===n-1?'on':i<n-1?'past':'';});
+  $('#lyLv').textContent=`第${n}層 / 全32層`;
+  $('#lyTh').textContent=th;
+  $('#lyNums').innerHTML=`<span style="color:var(--ink)">${esc(sub)}</span><br>${seedNums(n)}`;
+}
+lyR.addEventListener('input',renderLy); renderLy();
+
+/* ---------- 5: next word ---------- */
+const prompts=[
+  ['今日はとても',[['暑い',28],['寒い',18],['いい天気',16],['楽しい',10],['疲れた',8],['忙しい',7],['眠い',5],['静か',3],['ラッキー',2]]],
+  ['日本の首都は',[['東京',92],['どこ',3],['京都',2],['実は',1.5],['、',1.5]]],
+  ['猫が一番好きなのは',[['魚',22],['日なた',18],['寝ること',14],['飼い主',12],['箱',10],['高い所',8],['こたつ',6],['ネズミ',5],['掃除機',1]]]
+];
+let pi=0; const hist=[];
+const nwBars=$('#nwBars'), nwTemp=$('#nwTemp'), nwBlank=$('#nwBlank'), nwHist=$('#nwHist');
+$('#nwPrompts').innerHTML=prompts.map((p,i)=>`<button type="button" class="chip-btn" data-i="${i}" aria-pressed="${i===0}">${esc(p[0])}…</button>`).join('');
+$('#nwPrompts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;pi=+b.dataset.i;hist.length=0;
+  document.querySelectorAll('#nwPrompts button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderNw();});
+function dist(){
+  const T=+nwTemp.value, c=prompts[pi][1];
+  const raw=c.map(([w,p])=>Math.pow(p,1/T)); const s=raw.reduce((a,b)=>a+b,0);
+  return c.map(([w],i)=>[w,raw[i]/s]);
+}
+function renderNw(hit){
+  $('#nwText').textContent=prompts[pi][0];
+  $('#nwTempV').textContent=(+nwTemp.value).toFixed(1);
+  const d=dist();
+  nwBars.innerHTML=d.map(([w,p])=>`<div class="nw-bar${w===hit?' hit':''}"><span class="w">${esc(w)}</span><span class="bar"><i style="width:${(p*100).toFixed(1)}%"></i></span><span class="p mono">${(p*100).toFixed(p<.1?1:0)}%</span></div>`).join('');
+  nwBlank.textContent=hit||'？';
+  nwHist.innerHTML=hist.map(h=>`<span>${esc(h)}</span>`).join('');
+}
+function sample(){const d=dist();let r=Math.random();for(const [w,p] of d){if((r-=p)<=0)return w;}return d[d.length-1][0];}
+function pushHist(w){hist.unshift(w); if(hist.length>20) hist.length=20;}
+$('#nwPick').addEventListener('click',()=>{const w=sample();pushHist(w);renderNw(w);});
+$('#nwPick10').addEventListener('click',()=>{let w;for(let i=0;i<10;i++){w=sample();pushHist(w);}renderNw(w);});
+nwTemp.addEventListener('input',()=>renderNw());
+renderNw();
+})();
+</script>
+</body>
+</html>
